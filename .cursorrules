@@ -1,0 +1,308 @@
+# .cursorrules
+# ContextViber Development Rules for AI Assistants
+# These rules guide AI code generation for consistency and quality
+
+You are developing ContextViber, an AI context management tool for vibe coders.
+
+## Project Context
+- **Product**: Web application for managing AI conversation contexts
+- **Target Users**: Vibe coders (developers using AI for coding)
+- **Core Value**: Solve context limitation problems in AI conversations
+- **Tech Stack**: Next.js 14, TypeScript, Tailwind CSS v3
+
+## Critical Rules - MUST FOLLOW
+
+### Version Requirements
+- **Next.js**: Use 14.2.3 ONLY (NOT 15 or newer)
+- **React**: Use 18.2.0 ONLY (NOT 19 or newer)
+- **Tailwind CSS**: Use v3.x ONLY (NOT v4)
+- **Node.js**: Target Node 20.x
+
+### Forbidden Practices
+❌ NEVER use experimental features
+❌ NEVER use Turbopack (--turbo flag)
+❌ NEVER use .mjs file extensions
+❌ NEVER use React Server Components' advanced features
+❌ NEVER use complex TypeScript gymnastics
+❌ NEVER enable TypeScript strict mode
+
+### Required Practices
+✅ ALWAYS use .js extensions for config files
+✅ ALWAYS use App Router patterns (not Pages Router)
+✅ ALWAYS comment complex logic in English
+✅ ALWAYS handle errors gracefully
+✅ ALWAYS consider token optimization
+✅ ALWAYS prioritize readability over cleverness
+
+## Code Style Guidelines
+
+### TypeScript Configuration
+```typescript
+// tsconfig.json settings
+{
+  "compilerOptions": {
+    "strict": false,           // IMPORTANT: Keep false
+    "skipLibCheck": true,
+    "noImplicitAny": false,
+    "esModuleInterop": true,
+    "allowJs": true
+  }
+}
+```
+
+### File Structure Pattern
+```typescript
+// Component files
+export default function ComponentName() {
+  // Simple, readable code
+  return <div>Content</div>
+}
+
+// Utility files
+export function utilityName(param: any) {
+  // Type 'any' is acceptable for flexibility
+  return result
+}
+
+// API routes
+export async function POST(request: Request) {
+  try {
+    // Handle request
+    return Response.json({ success: true })
+  } catch (error) {
+    return Response.json({ error: 'Failed' }, { status: 500 })
+  }
+}
+```
+
+### Tailwind CSS Usage
+```jsx
+// ✅ CORRECT: Use Tailwind v3 utility classes
+<div className="flex items-center justify-between p-4 bg-gray-100">
+
+// ❌ WRONG: Don't use Tailwind v4 syntax or arbitrary values excessively
+<div className="flex-center-between p-[17px]">
+```
+
+### State Management
+```typescript
+// Use Zustand for global state
+import { create } from 'zustand'
+
+const useStore = create((set) => ({
+  data: null,
+  setData: (data) => set({ data })
+}))
+```
+
+## Project-Specific Patterns
+
+### File Analysis Pattern
+```typescript
+// Always exclude unnecessary files
+const EXCLUDE_PATTERNS = [
+  'node_modules',
+  '.git',
+  '.next',
+  'dist',
+  'build'
+]
+
+// Prioritize important files
+const IMPORTANCE_WEIGHTS = {
+  error_files: 100,
+  recent_changes: 50,
+  config_files: 30
+}
+```
+
+### Context Generation Pattern
+```typescript
+interface ContextPackage {
+  summary: string        // Brief project overview
+  keyFiles: string[]     // Most important files
+  dependencies: object   // File relationships
+  recentChanges: string[] // Latest modifications
+  instructions: string   // AI-specific guidance
+}
+```
+
+### Token Optimization Pattern
+```typescript
+// Always calculate and display token usage
+function optimizeForTokens(content: string): {
+  original: number
+  optimized: number
+  saved: number
+  percentage: number
+} {
+  // Remove comments, whitespace, etc.
+  // Return metrics for user awareness
+}
+```
+
+## Component Guidelines
+
+### Landing Page Structure
+```jsx
+// Simple, conversion-focused design
+<main>
+  <Hero />           // Clear value proposition
+  <Features />       // 3 core features
+  <Pricing />        // Simple tier comparison
+  <CTA />           // Strong call-to-action
+</main>
+```
+
+### Dashboard Layout
+```jsx
+// Intuitive, functional interface
+<div className="flex h-screen">
+  <Sidebar />        // Navigation
+  <MainContent>      // Primary work area
+    <Toolbar />      // Actions
+    <WorkArea />     // File display/editing
+    <Output />       // Generated results
+  </MainContent>
+</div>
+```
+
+### File Upload Component
+```jsx
+// Drag-and-drop with clear feedback
+<DropZone
+  onDrop={handleFiles}
+  maxSize="50MB"
+  accept={['.ts', '.tsx', '.js', '.jsx']}
+  multiple
+/>
+```
+
+## API Design Patterns
+
+### Endpoint Structure
+```typescript
+// /app/api/[resource]/route.ts
+export async function GET() { /* List */ }
+export async function POST() { /* Create */ }
+
+// /app/api/[resource]/[id]/route.ts
+export async function GET() { /* Read */ }
+export async function PUT() { /* Update */ }
+export async function DELETE() { /* Delete */ }
+```
+
+### Error Handling
+```typescript
+try {
+  // Operation
+  return Response.json({ data }, { status: 200 })
+} catch (error) {
+  console.error('Operation failed:', error)
+  return Response.json(
+    { error: 'User-friendly message' },
+    { status: 500 }
+  )
+}
+```
+
+### Rate Limiting
+```typescript
+// Simple in-memory rate limiting
+const rateLimiter = new Map()
+
+function checkRateLimit(identifier: string): boolean {
+  const limit = 100 // requests per hour
+  // Implementation
+  return allowed
+}
+```
+
+## Testing Approach
+
+### Unit Tests
+```typescript
+// Keep tests simple and focused
+describe('TokenCounter', () => {
+  it('counts tokens correctly', () => {
+    const result = countTokens('test string')
+    expect(result).toBe(2)
+  })
+})
+```
+
+### Integration Tests
+```typescript
+// Test complete user flows
+describe('File Upload Flow', () => {
+  it('processes files end-to-end', async () => {
+    // Upload -> Analyze -> Generate -> Export
+  })
+})
+```
+
+## Performance Guidelines
+
+### Optimization Priorities
+1. **Initial Load**: < 200KB bundle
+2. **Interactivity**: < 100ms response
+3. **API Calls**: Cache aggressively
+4. **File Processing**: Use Web Workers for large files
+
+### Common Optimizations
+```typescript
+// Dynamic imports for code splitting
+const HeavyComponent = dynamic(() => import('./Heavy'))
+
+// Memo for expensive computations
+const result = useMemo(() => expensiveOperation(data), [data])
+
+// Debounce user input
+const debouncedSearch = debounce(search, 300)
+```
+
+## Deployment Checklist
+
+### Before Deployment
+- [ ] Remove all console.logs
+- [ ] Test on Windows (primary user OS)
+- [ ] Verify mobile responsiveness
+- [ ] Check token calculations
+- [ ] Test error scenarios
+- [ ] Validate file size limits
+
+### Environment Variables
+```bash
+# Required for production
+NEXT_PUBLIC_APP_URL=https://contextviber.com
+ANTHROPIC_API_KEY=sk-ant-...
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+```
+
+## Common Pitfalls to Avoid
+
+1. **Don't over-engineer**: Start simple, iterate based on feedback
+2. **Don't ignore errors**: Always provide user-friendly messages
+3. **Don't waste tokens**: Optimize context before sending to AI
+4. **Don't break conventions**: Follow Next.js 14 patterns
+5. **Don't forget mobile**: Test on small screens
+
+## When Stuck
+
+1. Check the status.md for current project state
+2. Review DESIGN.md for architecture decisions
+3. Consult context.yaml for configuration
+4. Keep solutions simple and working
+5. Prioritize user value over technical elegance
+
+## Remember
+
+This is a tool for vibe coders who prioritize shipping over perfection. 
+The code should be:
+- **Functional** over fancy
+- **Clear** over clever  
+- **Stable** over cutting-edge
+- **Helpful** over complex
+
+When in doubt, choose the simpler solution that works today.

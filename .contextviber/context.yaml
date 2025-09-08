@@ -1,0 +1,272 @@
+# .contextviber/context.yaml
+# ContextViber Project Configuration
+# This file defines project settings for AI context generation
+
+project:
+  name: "ContextViber"
+  description: "AI Context Management Tool for Vibe Coders"
+  version: "0.1.0-alpha"
+  type: "web-application"
+  domain: "https://contextviber.com"
+
+# Technology stack configuration
+stack:
+  framework: "next"
+  version: "14.2.3"
+  language: "typescript"
+  runtime: "node"
+  package_manager: "npm"
+  
+  frontend:
+    ui_library: "react@18.2.0"
+    styling:
+      - "tailwindcss@3.4.0"
+      - "postcss@8.4.31"
+      - "autoprefixer@10.4.16"
+    state: "zustand"
+    
+  backend:
+    api: "next-api-routes"
+    database: "client-side-only"
+    authentication: "nextauth"
+    payment: "stripe"
+
+# AI configuration
+ai:
+  provider: "anthropic"
+  models:
+    default: "claude-3-haiku-20240307"
+    premium: "claude-3-sonnet-20240229"
+  
+  instructions:
+    - "Use Next.js 14 App Router patterns"
+    - "TypeScript with strict mode disabled"
+    - "Tailwind CSS v3 utility classes only"
+    - "No experimental features"
+    - "Prefer readability over cleverness"
+    - "Comment complex logic in English"
+    - "Use .js extension, not .mjs"
+    
+  avoid:
+    - "Next.js 15 or newer"
+    - "Turbopack"
+    - "React 19 features"
+    - "Tailwind CSS v4"
+    - "Complex type gymnastics"
+    - "Nested ternary operators"
+
+# File analysis settings
+analysis:
+  exclude_patterns:
+    - "node_modules"
+    - ".git"
+    - ".next"
+    - "dist"
+    - "build"
+    - "coverage"
+    - "*.log"
+    - "*.lock"
+    
+  include_extensions:
+    - ".ts"
+    - ".tsx"
+    - ".js"
+    - ".jsx"
+    - ".json"
+    - ".md"
+    - ".css"
+    - ".scss"
+    - ".yaml"
+    - ".yml"
+    - ".env"
+    
+  max_file_size: "5MB"
+  max_total_size: "50MB"
+  
+  importance_weights:
+    error_files: 100
+    recently_modified: 50
+    config_files: 30
+    index_files: 25
+    api_routes: 20
+    components: 15
+    utilities: 10
+
+# Context generation settings
+context:
+  max_tokens: 8000
+  include_sections:
+    - file_tree
+    - dependencies
+    - recent_changes
+    - error_summary
+    - key_files
+    
+  output_formats:
+    - markdown
+    - json
+    - mermaid
+    
+  templates:
+    status: ".contextviber/templates/status.md"
+    readme: ".contextviber/templates/README.md"
+    architecture: ".contextviber/templates/ARCHITECTURE.md"
+
+# Export settings
+export:
+  formats:
+    - markdown
+    - json
+    - clipboard
+    
+  compression: true
+  include_metadata: true
+  timestamp_format: "ISO8601"
+
+# Development settings
+development:
+  hot_reload: true
+  source_maps: true
+  error_overlay: true
+  
+  linting:
+    eslint: true
+    prettier: true
+    pre_commit: true
+    
+  testing:
+    framework: "jest"
+    coverage_threshold: 80
+
+# Production settings
+production:
+  optimization:
+    minify: true
+    tree_shake: true
+    compress: true
+    
+  caching:
+    static_assets: "1 year"
+    api_responses: "1 hour"
+    
+  monitoring:
+    error_tracking: "sentry"
+    analytics: "posthog"
+    performance: "vercel"
+
+# Feature flags
+features:
+  file_tree_generator: true
+  token_counter: true
+  status_generator: true
+  mermaid_diagrams: true
+  ai_enhancement: false  # Pro feature
+  voice_input: false     # Coming soon
+  team_collaboration: false  # Coming soon
+  security_scanning: false   # Coming soon
+
+# Pricing tiers
+pricing:
+  free:
+    projects_limit: 5
+    file_size_limit: "10MB"
+    features:
+      - "file_tree_generator"
+      - "token_counter"
+      - "basic_status"
+    
+  pro:
+    price_monthly: 29
+    projects_limit: unlimited
+    file_size_limit: "50MB"
+    features:
+      - "all_free_features"
+      - "ai_enhancement"
+      - "advanced_analysis"
+      - "api_access"
+      
+  team:
+    price_monthly: 99
+    users_limit: 5
+    features:
+      - "all_pro_features"
+      - "team_collaboration"
+      - "shared_workspaces"
+      - "admin_controls"
+
+# API rate limits
+rate_limits:
+  free:
+    requests_per_hour: 100
+    tokens_per_day: 50000
+    
+  pro:
+    requests_per_hour: 1000
+    tokens_per_day: 500000
+    
+  team:
+    requests_per_hour: 5000
+    tokens_per_day: 2000000
+
+# Deployment configuration
+deployment:
+  platform: "vercel"
+  branch: "main"
+  auto_deploy: true
+  
+  environment:
+    production:
+      url: "https://contextviber.com"
+      
+    staging:
+      url: "https://staging.contextviber.com"
+      
+    development:
+      url: "http://localhost:3000"
+
+# Integrations
+integrations:
+  github:
+    enabled: false
+    oauth: true
+    
+  gitlab:
+    enabled: false
+    
+  vscode:
+    extension_id: "contextviber.contextviber"
+    marketplace: false  # Not yet published
+    
+  cursor:
+    plugin: false  # Coming soon
+
+# Support and documentation
+support:
+  email: "support@contextviber.com"
+  docs: "https://contextviber.com/docs"
+  discord: "Coming soon"
+  
+  response_time:
+    free: "48 hours"
+    pro: "24 hours"
+    team: "4 hours"
+
+# Legal and compliance
+compliance:
+  gdpr: true
+  ccpa: true
+  soc2: false  # Future
+  
+  data_retention:
+    logs: "30 days"
+    user_data: "account_lifetime"
+    
+  privacy_policy: "https://contextviber.com/privacy"
+  terms_of_service: "https://contextviber.com/terms"
+
+# Metadata
+metadata:
+  created: "2025-01-10"
+  updated: "2025-01-10"
+  author: "ContextViber Team"
+  license: "Proprietary"
