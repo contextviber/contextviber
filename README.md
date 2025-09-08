@@ -1,36 +1,146 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 🚀 ContextViber
 
-## Getting Started
+> AI Context Management Tool for Vibe Coders - Smart context management solution for developers working with AI assistants
 
-First, run the development server:
+[![Next.js](https://img.shields.io/badge/Next.js-14.2.3-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3.3-blue)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4.0-38B2AC)](https://tailwindcss.com/)
+[![License](https://img.shields.io/badge/License-Proprietary-red)](LICENSE)
+
+## ✨ Features
+
+### 🆓 Free Tier
+- **📁 Smart File Upload** - Drag & drop with automatic security filtering
+- **🌳 File Tree Generator** - ASCII tree structure visualization
+- **🔢 Token Counter** - Real-time token calculation for AI models
+- **📊 Status.md Generator** - Customizable project status documentation
+- **💾 Project Management** - Save and manage multiple projects
+- **📋 Multiple Export Formats** - Markdown, JSON, Clipboard
+
+### 💎 Pro Features (Coming Soon)
+- **🤖 AI-Powered Enhancement** - Claude API integration
+- **🔍 Smart File Selection** - AI-driven relevance scoring
+- **📈 Advanced Analytics** - Detailed usage statistics
+- **🔗 API Access** - Programmatic context generation
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- Git
+
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/contextviber/contextviber.git
+cd contextviber
+
+# Install dependencies
+npm install
+
+# Create environment file
+cp .env.local.example .env.local
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see the application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Technology Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS v3
+- **State Management**: React Hooks + IndexedDB
+- **Deployment**: Vercel
+- **Storage**: Client-side only (IndexedDB)
 
-## Learn More
+## 📝 Configuration
 
-To learn more about Next.js, take a look at the following resources:
+### Environment Variables
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Create a `.env.local` file:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+```env
+# Required
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-## Deploy on Vercel
+# Optional - Simple Password Protection
+NEXT_PUBLIC_SITE_PASSWORD=your_password_here
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Future - AI Features
+ANTHROPIC_API_KEY=your_api_key_here
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+### Security Features
+
+- ✅ Automatic filtering of sensitive files
+- ✅ API key/secret detection
+- ✅ Binary file exclusion
+- ✅ File size limits (10MB)
+- ✅ Entropy-based random string detection
+
+## 📦 Deployment
+
+### Deploy to Vercel
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/contextviber/contextviber)
+
+1. Click the button above
+2. Connect your GitHub account
+3. Configure environment variables
+4. Deploy!
+
+### Manual Deployment
+
+```bash
+# Build for production
+npm run build
+
+# Start production server
+npm start
+```
+
+## 🗺️ Roadmap
+
+- [x] MVP Release (v0.5.0)
+- [ ] Mobile Responsive Design
+- [ ] Dark Mode
+- [ ] Claude API Integration
+- [ ] VSCode Extension
+- [ ] CLI Tool
+- [ ] Team Collaboration
+- [ ] Git Diff Integration
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the project
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is proprietary software. All rights reserved.
+
+## 💬 Support
+
+- Email: support@contextviber.com
+- Documentation: [https://contextviber.com/docs](https://contextviber.com/docs)
+- Discord: Coming soon
+
+## 🙏 Acknowledgments
+
+- Next.js team for the amazing framework
+- Vercel for hosting and deployment
+- All contributors and users
+
+---
+
+**Built with ❤️ by the ContextViber Team**

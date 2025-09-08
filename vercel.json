@@ -1,13 +1,61 @@
 {
+  "framework": "nextjs",
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
-  "framework": "nextjs",
+  
   "regions": ["hnd1"],
+  
   "functions": {
-    "app/**/*.tsx": {
-      "maxDuration": 10
+    "app/api/analyze/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/generate/route.ts": {
+      "maxDuration": 30
     }
-  }
+  },
+  
+  "env": {
+    "NEXT_PUBLIC_APP_NAME": "ContextViber",
+    "NEXT_PUBLIC_APP_VERSION": "0.5.0-beta"
+  },
+  
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    }
+  ],
+  
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    }
+  ],
+  
+  "redirects": [
+    {
+      "source": "/home",
+      "destination": "/",
+      "permanent": true
+    }
+  ],
+  
+  "cleanUrls": true,
+  "trailingSlash": false
 }
