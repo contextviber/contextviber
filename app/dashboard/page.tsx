@@ -1,401 +1,242 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import FileUploader from '../../components/features/FileUploader'
-import FileTreeDisplay from '../../components/features/FileTreeDisplay'
-import TokenCounter from '../../components/features/TokenCounter'
-import StatusGenerator from '../../components/features/StatusGenerator'
-import { projectStorage } from '../lib/storage/projectStorage'
-import { 
-  copyToClipboard, 
-  exportAsMarkdown, 
-  exportAsJSON, 
-  generateAIContext 
-} from '../utils/exportHelpers'
+import React, { useState, useEffect } from 'react';
+import { useToast } from '@/components/ui/ToastProvider';
+import { LoadingSpinner, LoadingOverlay } from '@/components/ui/LoadingSpinner';
+import { useConfirmationDialog } from '@/components/ui/ConfirmationDialog';
+import { useCommonShortcuts } from '@/hooks/useKeyboardShortcuts';
 import {
-  buildFileTree,
-  generateAsciiTree
-} from '../utils/fileHelpers'
+  formatBytes,
+  formatRelativeTime,
+  copyToClipboard,
+  downloadFile,
+  cn
+} from '@/utils/helpers';
 
-export default function Dashboard() {
-  const [files, setFiles] = useState<File[]>([])
-  const [activeTab, setActiveTab] = useState('upload')
-  const [fileTree, setFileTree] = useState('')
-  const [tokenCount, setTokenCount] = useState(0)
-  const [projectName, setProjectName] = useState('Untitled Project')
-  const [projectDescription, setProjectDescription] = useState('')
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
-  const [copyStatus, setCopyStatus] = useState(false)
-
-  // Load project if ID is in URL params
+// Example Dashboard component using all improvements
+export default function DashboardPage() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [projects, setProjects] = useState<any[]>([]);
+  const { showSuccess, showError, showInfo, showWarning } = useToast();
+  const { showConfirmation, ConfirmationDialogComponent } = useConfirmationDialog();
+  
+  // Enable keyboard shortcuts
+  useCommonShortcuts();
+  
+  // Example: Load projects
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const projectId = params.get('project')
-    if (projectId) {
-      loadProject(projectId)
-    }
-  }, [])
-
-  const loadProject = async (id: string) => {
+    loadProjects();
+  }, []);
+  
+  const loadProjects = async () => {
+    setIsLoading(true);
     try {
-      const project = await projectStorage.getProject(id)
-      if (project) {
-        setProjectName(project.name)
-        setProjectDescription(project.description)
-        setFileTree(project.fileTree)
-        setTokenCount(project.tokenCount)
-        // Note: Actual files can't be restored, only metadata
-      }
+      // Simulated API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Example data
+      const mockProjects = [
+        {
+          id: '1',
+          name: 'ContextViber',
+          size: 1024000,
+          createdAt: new Date(Date.now() - 86400000),
+          files: 42,
+        },
+        {
+          id: '2',
+          name: 'Another Project',
+          size: 2048000,
+          createdAt: new Date(Date.now() - 172800000),
+          files: 78,
+        },
+      ];
+      
+      setProjects(mockProjects);
+      showSuccess('Projects loaded successfully!');
     } catch (error) {
-      console.error('Failed to load project:', error)
+      showError('Failed to load projects. Please try again.');
+      console.error('Error loading projects:', error);
+    } finally {
+      setIsLoading(false);
     }
-  }
-
-  // ファイルアップロード時の自動処理
-  const handleFilesSelected = async (newFiles: File[]) => {
-    setFiles(newFiles)
-    
-    // プロジェクト名を自動推測
-    if (newFiles.length > 0) {
-      // package.jsonを探す
-      const packageJson = newFiles.find(f => f.name === 'package.json')
-      if (packageJson) {
+  };
+  
+  const handleDeleteProject = (projectId: string, projectName: string) => {
+    showConfirmation({
+      title: 'Delete Project',
+      message: `Are you sure you want to delete "${projectName}"? This action cannot be undone.`,
+      type: 'danger',
+      confirmText: 'Delete',
+      confirmWithInput: projectName, // User must type project name to confirm
+      onConfirm: async () => {
         try {
-          const content = await packageJson.text()
-          const pkg = JSON.parse(content)
-          if (pkg.name) {
-            setProjectName(pkg.name)
-          }
-        } catch (e) {
-          // package.json読み込みエラーは無視
+          // Simulated deletion
+          await new Promise(resolve => setTimeout(resolve, 500));
+          setProjects(prev => prev.filter(p => p.id !== projectId));
+          showSuccess(`Project "${projectName}" deleted successfully`);
+        } catch (error) {
+          showError('Failed to delete project');
         }
-      }
-      
-      // ファイルツリーを自動生成
-      const tree = buildFileTree(newFiles)
-      const asciiTree = generateAsciiTree(tree)
-      setFileTree(asciiTree)
-      
-      // トークン数を自動計算（最初の10ファイルのみサンプリング）
-      let totalChars = 0
-      const textFileExtensions = /\.(ts|tsx|js|jsx|json|md|txt|css|scss|html|xml|yaml|yml)$/
-      
-      for (const file of newFiles) {
-        if (file.type.startsWith('text/') || file.name.match(textFileExtensions)) {
-          try {
-            // 100KB以下のファイルのみ読み込む
-            if (file.size < 100 * 1024) {
-              const text = await file.text()
-              totalChars += text.length
-            } else {
-              // 大きいファイルは推定
-              totalChars += file.size * 0.7 // バイト数の70%を文字数と推定
-            }
-          } catch (e) {
-            // ファイル読み込みエラーは無視
-          }
-        }
-      }
-      
-      const estimatedTokens = Math.ceil(totalChars / 4)
-      setTokenCount(estimatedTokens)
-    }
-  }
-
-  const handleCopyToClipboard = async () => {
-    const context = generateAIContext({
-      projectName,
-      projectDescription,
-      files,
-      fileTree,
-      tokenCount
-    })
-    
-    const success = await copyToClipboard(context)
-    if (success) {
-      setCopyStatus(true)
-      setTimeout(() => setCopyStatus(false), 2000)
-    }
-  }
-
-  const handleExportMarkdown = () => {
-    exportAsMarkdown({
-      projectName,
-      projectDescription,
-      files,
-      fileTree,
-      tokenCount
-    })
-  }
-
-  const handleExportJSON = () => {
-    exportAsJSON({
-      projectName,
-      projectDescription,
-      files,
-      fileTree,
-      tokenCount
-    })
-  }
-
-  const saveProject = async () => {
-    setSaveStatus('saving')
+      },
+    });
+  };
+  
+  const handleExportProject = async (project: any) => {
     try {
-      const serializedFiles = await projectStorage.serializeFiles(files)
-      const project = {
-        id: projectStorage.generateProjectId(),
-        name: projectName,
-        description: projectDescription,
-        files: serializedFiles,
-        fileTree,
-        tokenCount,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        metadata: {
-          totalSize: files.reduce((acc, file) => acc + file.size, 0),
-          fileCount: files.length,
-          lastAnalysis: new Date()
-        }
-      }
-      
-      await projectStorage.saveProject(project)
-      setSaveStatus('saved')
-      setTimeout(() => setSaveStatus('idle'), 3000)
+      const content = JSON.stringify(project, null, 2);
+      downloadFile(content, `${project.name}.json`, 'application/json');
+      showSuccess('Project exported successfully!');
     } catch (error) {
-      console.error('Failed to save project:', error)
-      setSaveStatus('idle')
+      showError('Failed to export project');
     }
-  }
-
+  };
+  
+  const handleCopyToClipboard = async (text: string) => {
+    const success = await copyToClipboard(text);
+    if (success) {
+      showInfo('Copied to clipboard!');
+    } else {
+      showError('Failed to copy to clipboard');
+    }
+  };
+  
+  const handleCreateProject = () => {
+    showWarning('Project creation feature coming soon!');
+  };
+  
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
       {/* Header */}
-      <header className="border-b border-white/10 backdrop-blur-md bg-black/20">
-        <div className="container mx-auto px-4 py-4">
+      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">C</span>
-              </div>
-              <h1 className="text-xl font-bold text-white">ContextViber</h1>
-            </div>
-            <nav className="flex items-center gap-6">
-              <a href="/" className="text-gray-300 hover:text-white transition">Home</a>
-              <a href="/projects" className="text-gray-300 hover:text-white transition">Projects</a>
-              <button className="px-4 py-2 bg-purple-500/20 text-purple-300 rounded-lg hover:bg-purple-500/30 transition">
-                Settings
+            <h1 className="text-2xl font-bold gradient-text">
+              ContextViber Dashboard
+            </h1>
+            <div className="flex gap-3">
+              <button
+                onClick={handleCreateProject}
+                data-shortcut="upload"
+                className="btn-primary"
+              >
+                + New Project
               </button>
-            </nav>
+              <button
+                onClick={loadProjects}
+                className="btn-secondary"
+              >
+                Refresh
+              </button>
+            </div>
           </div>
         </div>
       </header>
-
-      <div className="container mx-auto px-4 py-8">
-        {/* Tab Navigation */}
-        <div className="flex gap-2 mb-8">
-          {[
-            { id: 'upload', label: 'Upload Files', icon: '📁' },
-            { id: 'tree', label: 'File Tree', icon: '🌳' },
-            { id: 'tokens', label: 'Token Counter', icon: '🏷️' },
-            { id: 'status', label: 'Status Generator', icon: '📝' }
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-6 py-3 rounded-lg font-medium transition flex items-center gap-2 ${
-                activeTab === tab.id
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
-                  : 'bg-white/10 text-gray-300 hover:bg-white/20'
-              }`}
-            >
-              <span>{tab.icon}</span>
-              <span>{tab.label}</span>
-            </button>
-          ))}
+      
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Quick Tips */}
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm text-blue-800">
+            💡 <strong>Pro Tip:</strong> Use keyboard shortcuts for faster navigation. 
+            Press <kbd className="px-2 py-1 bg-white rounded text-xs">Shift + ?</kbd> to see all shortcuts.
+          </p>
         </div>
-
-        {/* Main Content Area */}
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Left Panel - Main Work Area */}
-          <div className="lg:col-span-2">
-            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6 min-h-[600px]">
-              {activeTab === 'upload' && (
-                <div>
-                  <h2 className="text-2xl font-bold text-white mb-4">Upload Your Project Files</h2>
-                  <p className="text-gray-400 mb-6">
-                    Drag and drop your project folder or select files to analyze
-                  </p>
-                  <FileUploader onFilesSelected={handleFilesSelected} />
-                  
-                  {files.length > 0 && (
-                    <div className="mt-6">
-                      <h3 className="text-lg font-semibold text-white mb-3">
-                        Selected Files ({files.length})
-                      </h3>
-                      <div className="space-y-2 max-h-64 overflow-y-auto">
-                        {files.map((file, index) => (
-                          <div key={index} className="flex items-center justify-between p-2 bg-white/5 rounded">
-                            <span className="text-gray-300 text-sm truncate">{file.name}</span>
-                            <span className="text-gray-500 text-xs">
-                              {(file.size / 1024).toFixed(2)} KB
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {activeTab === 'tree' && (
-                <div>
-                  <h2 className="text-2xl font-bold text-white mb-4">File Tree Generator</h2>
-                  <p className="text-gray-400 mb-6">
-                    Generate an ASCII tree structure from your uploaded files
-                  </p>
-                  <FileTreeDisplay files={files} onTreeGenerated={setFileTree} />
-                </div>
-              )}
-
-              {activeTab === 'tokens' && (
-                <div>
-                  <h2 className="text-2xl font-bold text-white mb-4">Token Counter</h2>
-                  <p className="text-gray-400 mb-6">
-                    Calculate token usage and estimate costs for AI models
-                  </p>
-                  <TokenCounter files={files} onCountUpdate={setTokenCount} />
-                </div>
-              )}
-
-              {activeTab === 'status' && (
-                <div>
-                  <h2 className="text-2xl font-bold text-white mb-4">Status.md Generator</h2>
-                  <p className="text-gray-400 mb-6">
-                    Generate a comprehensive status document for your project
-                  </p>
-                  <StatusGenerator files={files} fileTree={fileTree} />
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Right Panel - Info & Stats */}
-          <div className="space-y-6">
-            {/* Quick Stats */}
-            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Quick Stats</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Files Uploaded</span>
-                  <span className="text-white font-medium">{files.length}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Total Size</span>
-                  <span className="text-white font-medium">
-                    {(files.reduce((acc, file) => acc + file.size, 0) / 1024).toFixed(2)} KB
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Token Count</span>
-                  <span className="text-white font-medium">{tokenCount.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Export Options */}
-            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Project Management</h3>
-              
-              {/* Project Name Input */}
-              <div className="mb-3">
-                <input
-                  type="text"
-                  value={projectName}
-                  onChange={(e) => setProjectName(e.target.value)}
-                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none text-sm"
-                  placeholder="Project name..."
-                />
-              </div>
-              
-              {/* Save Button */}
-              <button
-                onClick={saveProject}
-                disabled={files.length === 0 || saveStatus === 'saving'}
-                className={`w-full px-4 py-2 rounded-lg transition mb-3 ${
-                  saveStatus === 'saved' 
-                    ? 'bg-green-500/20 text-green-300'
-                    : saveStatus === 'saving'
-                    ? 'bg-purple-500/30 text-purple-300 opacity-50'
-                    : files.length === 0
-                    ? 'bg-gray-700/30 text-gray-500 cursor-not-allowed'
-                    : 'bg-purple-500/20 text-purple-300 hover:bg-purple-500/30'
-                }`}
+        
+        {/* Projects Grid */}
+        <LoadingOverlay isLoading={isLoading} text="Loading projects...">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 min-h-[400px]">
+            {projects.map((project) => (
+              <div
+                key={project.id}
+                className="card-hover group animate-scale-in"
               >
-                {saveStatus === 'saved' ? '✓ Saved!' : saveStatus === 'saving' ? 'Saving...' : '💾 Save Project'}
-              </button>
-
-              <div className="space-y-3">
-                <button 
-                  onClick={handleCopyToClipboard}
-                  disabled={files.length === 0}
-                  className={`w-full px-4 py-2 rounded-lg transition ${
-                    copyStatus
-                      ? 'bg-green-500/20 text-green-300'
-                      : files.length === 0
-                      ? 'bg-gray-700/30 text-gray-500 cursor-not-allowed'
-                      : 'bg-purple-500/20 text-purple-300 hover:bg-purple-500/30'
-                  }`}
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {project.name}
+                  </h3>
+                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => handleExportProject(project)}
+                      className="text-gray-500 hover:text-purple-600"
+                      title="Export"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => handleCopyToClipboard(project.id)}
+                      className="text-gray-500 hover:text-blue-600"
+                      title="Copy ID"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => handleDeleteProject(project.id, project.name)}
+                      className="text-gray-500 hover:text-red-600"
+                      title="Delete"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="space-y-2 text-sm text-gray-600">
+                  <div className="flex justify-between">
+                    <span>Files:</span>
+                    <span className="font-medium">{project.files}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Size:</span>
+                    <span className="font-medium">{formatBytes(project.size)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Created:</span>
+                    <span className="font-medium">{formatRelativeTime(project.createdAt)}</span>
+                  </div>
+                </div>
+                
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <button className="w-full btn-primary text-sm">
+                    Open Project
+                  </button>
+                </div>
+              </div>
+            ))}
+            
+            {/* Empty State */}
+            {!isLoading && projects.length === 0 && (
+              <div className="col-span-full text-center py-12">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No projects yet
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Create your first project to get started
+                </p>
+                <button
+                  onClick={handleCreateProject}
+                  className="btn-primary"
                 >
-                  {copyStatus ? '✓ Copied!' : '📋 Copy to Clipboard'}
-                </button>
-                <button 
-                  onClick={handleExportMarkdown}
-                  disabled={files.length === 0}
-                  className={`w-full px-4 py-2 rounded-lg transition ${
-                    files.length === 0
-                      ? 'bg-gray-700/30 text-gray-500 cursor-not-allowed'
-                      : 'bg-purple-500/20 text-purple-300 hover:bg-purple-500/30'
-                  }`}
-                >
-                  💾 Download as Markdown
-                </button>
-                <button 
-                  onClick={handleExportJSON}
-                  disabled={files.length === 0}
-                  className={`w-full px-4 py-2 rounded-lg transition ${
-                    files.length === 0
-                      ? 'bg-gray-700/30 text-gray-500 cursor-not-allowed'
-                      : 'bg-purple-500/20 text-purple-300 hover:bg-purple-500/30'
-                  }`}
-                >
-                  📦 Export as JSON
+                  Create Project
                 </button>
               </div>
-            </div>
-
-            {/* Pro Features */}
-            <div className="bg-gradient-to-br from-purple-900/50 to-pink-900/50 border border-purple-500/20 rounded-xl p-6">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-lg font-semibold text-white">Pro Features</h3>
-                <span className="px-2 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs rounded-full">
-                  Upgrade
-                </span>
-              </div>
-              <ul className="space-y-2">
-                <li className="flex items-center gap-2 text-gray-300 text-sm">
-                  <span className="text-purple-400">✨</span> AI-Powered Analysis
-                </li>
-                <li className="flex items-center gap-2 text-gray-300 text-sm">
-                  <span className="text-purple-400">🤖</span> Claude Integration
-                </li>
-                <li className="flex items-center gap-2 text-gray-300 text-sm">
-                  <span className="text-purple-400">📊</span> Advanced Metrics
-                </li>
-              </ul>
-            </div>
+            )}
           </div>
-        </div>
-      </div>
+        </LoadingOverlay>
+      </main>
+      
+      {/* Confirmation Dialog */}
+      <ConfirmationDialogComponent />
     </div>
-  )
+  );
 }
