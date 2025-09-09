@@ -19,13 +19,7 @@ const nextConfig = {
     NEXT_PUBLIC_MAX_FILE_SIZE: '10485760', // 10MB in bytes
   },
   
-  // APIタイムアウト設定
-  api: {
-    bodyParser: {
-      sizeLimit: '10mb',
-    },
-    responseLimit: '10mb',
-  },
+
   
   // ヘッダー設定（セキュリティ）
   async headers() {

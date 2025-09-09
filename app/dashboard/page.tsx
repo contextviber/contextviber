@@ -26,7 +26,7 @@ export default function DashboardPage() {
   // Example: Load projects
   useEffect(() => {
     loadProjects();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   
   const loadProjects = async () => {
     setIsLoading(true);
